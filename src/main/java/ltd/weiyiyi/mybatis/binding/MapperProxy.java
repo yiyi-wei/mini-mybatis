@@ -3,7 +3,6 @@ package ltd.weiyiyi.mybatis.binding;
 import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -32,7 +31,7 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
         if(Object.class.equals(method.getDeclaringClass())) {
             return method.invoke(args);
         } else {
-            return "method proxy " + method.getName() + " " + Arrays.toString(args);
+            return "method proxy " + sqlSession.get(mapperInterface.getName() + "." + method.getName());
         }
     }
 }
