@@ -31,6 +31,8 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
         if(Object.class.equals(method.getDeclaringClass())) {
             return method.invoke(args);
         } else {
+            // sqlSession is a map of classAllName & Mapper.xml
+            // I will run sql of mapper.xml after do something sqlSession value
             return "method proxy " + sqlSession.get(mapperInterface.getName() + "." + method.getName());
         }
     }
