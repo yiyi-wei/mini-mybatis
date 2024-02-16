@@ -1,7 +1,8 @@
 package ltd.weiyiyi.mybatis.binding;
 
+import ltd.weiyiyi.mybatis.session.SqlSession;
+
 import java.lang.reflect.Proxy;
-import java.util.Map;
 
 /**
  * @author Wei Han
@@ -17,7 +18,7 @@ public class MapperProxyFactory<T> {
         this.mapperInterface = mapperInterface;
     }
 
-    public T newInstance(Map<String, String> sqlSession) {
+    public T newInstance(SqlSession sqlSession) {
         final MapperProxy<T> proxy = new MapperProxy<T>(sqlSession, mapperInterface);
         return (T) Proxy.newProxyInstance(proxy.getClass().getClassLoader(),
                 new Class[]{mapperInterface}, proxy);
