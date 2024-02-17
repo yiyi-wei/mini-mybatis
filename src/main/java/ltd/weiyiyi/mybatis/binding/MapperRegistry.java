@@ -1,6 +1,7 @@
 package ltd.weiyiyi.mybatis.binding;
 
 import cn.hutool.core.lang.ClassScanner;
+import ltd.weiyiyi.mybatis.session.Configuration;
 import ltd.weiyiyi.mybatis.session.SqlSession;
 
 import java.util.HashMap;
@@ -16,6 +17,12 @@ import java.util.Set;
 public class MapperRegistry {
 
     final Map<Class<?>, MapperProxyFactory<?>> knownMapper = new HashMap();
+
+    private Configuration config;
+
+    public MapperRegistry(Configuration config) {
+        this.config = config;
+    }
 
     public <T> T getMapper(Class<T> type, SqlSession sqlSession) {
 
@@ -37,12 +44,12 @@ public class MapperRegistry {
             return;
         }
 
-        MapperProxyFactory<?> mapperProxyFactory = knownMapper.get(type);
-        if(mapperProxyFactory != null) {
+        // exist in mapper error
+        if(hasMapper(type)) {
             throw new RuntimeException("type " + type + " is already known in the mapperRegistry.");
         }
 
-        mapperProxyFactory = new MapperProxyFactory<>(type);
+        MapperProxyFactory<?> mapperProxyFactory = new MapperProxyFactory<>(type);
 
         knownMapper.put(type, mapperProxyFactory);
     }
@@ -52,5 +59,9 @@ public class MapperRegistry {
         for(Class<?> clazz : classes) {
             addMapper(clazz);
         }
+    }
+
+    public boolean hasMapper(Class<?> type) {
+        return knownMapper.containsKey(type);
     }
 }

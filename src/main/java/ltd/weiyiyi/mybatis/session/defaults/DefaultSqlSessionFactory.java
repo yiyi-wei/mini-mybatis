@@ -1,6 +1,6 @@
 package ltd.weiyiyi.mybatis.session.defaults;
 
-import ltd.weiyiyi.mybatis.binding.MapperRegistry;
+import ltd.weiyiyi.mybatis.session.Configuration;
 import ltd.weiyiyi.mybatis.session.SqlSession;
 import ltd.weiyiyi.mybatis.session.SqlSessionFactory;
 
@@ -11,14 +11,13 @@ import ltd.weiyiyi.mybatis.session.SqlSessionFactory;
  * @domain www.weiyiyi.ltd
  */
 public class DefaultSqlSessionFactory implements SqlSessionFactory {
-    private MapperRegistry mapperRegistry;
-
-    public DefaultSqlSessionFactory(MapperRegistry mapperRegistry) {
-        this.mapperRegistry = mapperRegistry;
+    private Configuration configuration;
+    public DefaultSqlSessionFactory(Configuration configuration) {
+        this.configuration = configuration;
     }
 
     @Override
     public SqlSession openSession() {
-        return new DefaultSqlSession(mapperRegistry);
+        return new DefaultSqlSession(configuration);
     }
 }

@@ -1,8 +1,14 @@
 package ltd.weiyiyi.test.dao;
 
+import ltd.weiyiyi.mybatis.io.Resources;
+import ltd.weiyiyi.mybatis.session.SqlSession;
+import ltd.weiyiyi.mybatis.session.SqlSessionFactory;
+import ltd.weiyiyi.mybatis.session.SqlSessionFactoryBuilder;
 import ltd.weiyiyi.test.dao.dao.IUserDao;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.io.Reader;
 import java.lang.reflect.Proxy;
 
 /**
@@ -15,19 +21,16 @@ import java.lang.reflect.Proxy;
 public class ApiTest {
 
     @Test
-    public void test_queryUserByUId() {
-        
-        //MapperProxyFactory<IUserDao> factory = new MapperProxyFactory<>(IUserDao.class);
-        //Map<String, String> sqlSession = new HashMap<>();
-        //sqlSession.put("ltd.weiyiyi.test.dao.dao.IUserDao.queryUserByUId", "模拟执行 Mapper.xml 中 SQL" +
-        //        " 语句的操作：通过Uid查询用户");
-        //sqlSession.put("ltd.weiyiyi.test.dao.dao.IUserDao.queryUserByName", "mock invoke sql that" +
-        //        " query user by name in Mapper.xml");
-        //IUserDao userDao = factory.newInstance(sqlSession);
-        //String s1 = userDao.queryUserByUId("weiyiyi");
-        //String s2 = userDao.queryUserByName("wei han");
-        //System.out.println(s1);
-        //System.out.println(s2);
+    public void test_queryUserByUId() throws IOException {
+
+        Reader sourceAsReader = Resources.getSourceAsReader("mybatis-config-datasource.xml");
+        SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(sourceAsReader);
+        SqlSession sqlSession = sqlSessionFactory.openSession();
+        IUserDao userDao = sqlSession.getMapper(IUserDao.class);
+        String id = userDao.queryUserByUId("wei han");
+
+        System.out.println(id);
+
     }
 
     @Test

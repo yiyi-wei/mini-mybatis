@@ -5,6 +5,7 @@ import ltd.weiyiyi.mybatis.session.SqlSession;
 import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.Map;
 
 /**
  * @author Wei Han
@@ -15,13 +16,15 @@ import java.lang.reflect.Method;
 public class MapperProxy<T> implements InvocationHandler, Serializable {
 
     private static final long serialVersionUID = 6424333398559729838L;
-    private SqlSession sqlSession;
 
+    private final Map<Method, MapperMethod> methodCache;
+    private SqlSession sqlSession;
     private final Class<T> mapperInterface;
 
-    public MapperProxy(SqlSession sqlSession, Class<T> mapperInterface) {
+    public MapperProxy(SqlSession sqlSession, Class<T> mapperInterface, Map<Method, MapperMethod> methodCache) {
         this.sqlSession = sqlSession;
         this.mapperInterface = mapperInterface;
+        this.methodCache = methodCache;
     }
 
     @Override
@@ -32,9 +35,19 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
         if(Object.class.equals(method.getDeclaringClass())) {
             return method.invoke(this, args);
         } else {
-            // sqlSession is a map of classAllName & Mapper.xml
-            // I will run sql of mapper.xml after do something sqlSession value
-            return "method proxy " + sqlSession.selectOne(method.getName(), args);
+            MapperMethod mapperMethod = cachedMapperMethod(method);
+            return "method proxy " + mapperMethod.execute(sqlSession, args);
         }
+    }
+
+    private MapperMethod cachedMapperMethod(Method method) {
+        if(methodCache.containsKey(method)) {
+            return methodCache.get(method);
+        }
+
+        MapperMethod mapperMethod = new MapperMethod(mapperInterface, method, sqlSession.getConfiguration());
+
+        methodCache.put(method, mapperMethod);
+        return mapperMethod;
     }
 }
