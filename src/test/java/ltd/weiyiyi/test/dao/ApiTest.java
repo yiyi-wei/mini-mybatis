@@ -22,15 +22,15 @@ public class ApiTest {
 
     @Test
     public void test_queryUserByUId() throws IOException {
+        SqlSessionFactoryBuilder sqlSessionFactoryBuilder = new SqlSessionFactoryBuilder();
 
         Reader sourceAsReader = Resources.getSourceAsReader("mybatis-config-datasource.xml");
-        SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(sourceAsReader);
+        SqlSessionFactory sqlSessionFactory = sqlSessionFactoryBuilder.build(sourceAsReader);
         SqlSession sqlSession = sqlSessionFactory.openSession();
+
         IUserDao userDao = sqlSession.getMapper(IUserDao.class);
-        String id = userDao.queryUserByUId("wei han");
-
+        String id = userDao.queryUserByUId(1L);
         System.out.println(id);
-
     }
 
     @Test
@@ -38,7 +38,7 @@ public class ApiTest {
         IUserDao userDao = (IUserDao) Proxy.newProxyInstance(
                 Thread.currentThread().getContextClassLoader(),
                 new Class[]{IUserDao.class}, (proxy, method, args) -> "你被代理了！");
-        String result = userDao.queryUserByUId("weiyiyi");
+        String result = userDao.queryUserByUId(10001L);
         System.out.println("result：" + result);
     }
 

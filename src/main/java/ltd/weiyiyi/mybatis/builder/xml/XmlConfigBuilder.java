@@ -1,21 +1,23 @@
 package ltd.weiyiyi.mybatis.builder.xml;
 
 import ltd.weiyiyi.mybatis.builder.BaseBuilder;
+import ltd.weiyiyi.mybatis.dataSource.druid.DruidDataSourceFactory;
 import ltd.weiyiyi.mybatis.io.Resources;
+import ltd.weiyiyi.mybatis.mapping.BoundSql;
+import ltd.weiyiyi.mybatis.mapping.Environment;
 import ltd.weiyiyi.mybatis.mapping.MappedStatement;
 import ltd.weiyiyi.mybatis.mapping.SqlCommandType;
 import ltd.weiyiyi.mybatis.session.Configuration;
+import ltd.weiyiyi.mybatis.transaction.TransactionFactory;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.xml.sax.InputSource;
 
+import javax.sql.DataSource;
 import java.io.Reader;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,6 +29,7 @@ import java.util.regex.Pattern;
  */
 public class XmlConfigBuilder extends BaseBuilder {
     private Element root;
+
     public XmlConfigBuilder(Reader reader) {
         super(new Configuration());
 
@@ -42,11 +45,60 @@ public class XmlConfigBuilder extends BaseBuilder {
 
     public Configuration parse() {
         try {
+            environmentsElement(root.element("environments"));
+
             mapperElement(root.element("mappers"));
         } catch(Exception e) {
             throw new RuntimeException("Error parsing SQL mapper configuration. Cause: " + e, e);
         }
         return configuration;
+    }
+
+    /*
+     * <environments default="development">
+     *      <environment id="development">
+     *          <transactionManager type="JDBC">
+     *              <property name="..." value="..."/>
+     *          </transactionManager>
+     *          <dataSource type="POOLED">
+     *              <property name="driver" value="${driver}"/>
+     *              <property name="url" value="${url}"/>
+     *              <property name="username" value="${username}"/>
+     *              <property name="password" value="${password}"/>
+     *          </dataSource>
+     *      </environment>
+     * </environments>
+     */
+    private void environmentsElement(Element environments) throws Exception {
+        String defaultEnvironment = environments.attributeValue("default");
+        List<Element> environmentList = environments.elements("environment");
+
+        for(Element environment : environmentList) {
+            String envId = environment.attributeValue("id");
+            if(!defaultEnvironment.equals(envId)) {
+                continue;
+            }
+
+            String txType = environment.element("transactionManager").attributeValue("type");
+
+            Element dataSourceElement = environment.element("dataSource");
+            String dataSourceType = dataSourceElement.attributeValue("type");
+            List<Element> propertyList = dataSourceElement.elements("property");
+
+            DruidDataSourceFactory dsFactory = (DruidDataSourceFactory) typeAliasRegistry.resolveAlias(dataSourceType)
+                    .newInstance();
+
+            Properties props = new Properties();
+            for(Element property : propertyList) {
+                props.put(property.attributeValue("name"), property.attributeValue("value"));
+            }
+            dsFactory.setProperties(props);
+
+            DataSource dataSource = dsFactory.getDataSource();
+            TransactionFactory txFactory = (TransactionFactory) typeAliasRegistry.resolveAlias(txType)
+                    .newInstance();
+            configuration.setEnvironment(new Environment(envId, txFactory, dataSource));
+        }
     }
 
     private void mapperElement(Element mappers) throws Exception {
@@ -74,20 +126,20 @@ public class XmlConfigBuilder extends BaseBuilder {
                 String nodeName = node.getName();
                 SqlCommandType sqlCommandType = SqlCommandType.valueOf(nodeName.toUpperCase(Locale.ENGLISH));
 
-                Map<Integer, String> parameter = new HashMap<>();
+                Map<Integer, String> parameters = new HashMap<>();
                 // parse parameter by regex
                 Pattern pattern = Pattern.compile("(#\\{(.*?)})");
                 Matcher matcher = pattern.matcher(sql);
                 for(int i = 1; matcher.find(); i++) {
                     String g1 = matcher.group(1);
                     String g2 = matcher.group(2);
-                    parameter.put(i, g2);
+                    parameters.put(i, g2);
                     sql = sql.replace(g1, "?");
                 }
 
-                MappedStatement mappedStatement = new MappedStatement
-                        .Builder(configuration, sqlId, parameterType, sqlCommandType, resultType, sql
-                        , parameter).build();
+                BoundSql boundSql = new BoundSql(sql, parameterType, parameters, resultType);
+
+                MappedStatement mappedStatement = new MappedStatement.Builder(configuration, sqlId, sqlCommandType, boundSql).build();
 
                 configuration.addMappedStatement(sqlId, mappedStatement);
             }

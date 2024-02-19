@@ -18,7 +18,7 @@ public class SqlSessionFactoryBuilder {
         // parse config.xml to build configuration
         XmlConfigBuilder xmlConfigBuilder = new XmlConfigBuilder(reader);
         Configuration configuration = xmlConfigBuilder.parse();
-        return new DefaultSqlSessionFactory(configuration);
+        return build(configuration);
     }
 
     public SqlSessionFactory build(Configuration configuration) {

@@ -3,8 +3,6 @@ package ltd.weiyiyi.mybatis.mapping;
 import lombok.Data;
 import ltd.weiyiyi.mybatis.session.Configuration;
 
-import java.util.Map;
-
 /**
  * @author Wei Han
  * @description xml node in mapper.xml
@@ -24,11 +22,9 @@ public class MappedStatement {
      */
     private String id;
 
-    private String parameterType;
     private SqlCommandType sqlCommandType;
-    private String resultType;
-    private String sql;
-    private Map<Integer, String> parameter;
+
+    private BoundSql boundSql;
 
     /**
      * disable constructor
@@ -40,15 +36,12 @@ public class MappedStatement {
     public static class Builder {
         private MappedStatement mappedStatement = new MappedStatement();
 
-        public Builder(Configuration configuration, String id, String parameterType,
-                       SqlCommandType sqlCommandType, String resultType, String sql, Map<Integer, String> parameter) {
+        public Builder(Configuration configuration, String id,
+                       SqlCommandType sqlCommandType, BoundSql bound) {
             mappedStatement.configuration = configuration;
             mappedStatement.id = id;
-            mappedStatement.parameterType = parameterType;
             mappedStatement.sqlCommandType = sqlCommandType;
-            mappedStatement.resultType = resultType;
-            mappedStatement.sql = sql;
-            mappedStatement.parameter = parameter;
+            mappedStatement.boundSql = bound;
         }
 
         public MappedStatement build() {

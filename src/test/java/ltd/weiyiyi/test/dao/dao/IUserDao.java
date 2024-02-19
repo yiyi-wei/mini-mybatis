@@ -8,6 +8,6 @@ package ltd.weiyiyi.test.dao.dao;
  */
 public interface IUserDao {
 
-    String queryUserByUId(String uid);
+    String queryUserByUId(Long uid);
     String queryUserByName(String name);
 }

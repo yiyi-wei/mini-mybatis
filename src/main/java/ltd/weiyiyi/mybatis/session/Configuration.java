@@ -1,7 +1,11 @@
 package ltd.weiyiyi.mybatis.session;
 
 import ltd.weiyiyi.mybatis.binding.MapperRegistry;
+import ltd.weiyiyi.mybatis.dataSource.druid.DruidDataSourceFactory;
+import ltd.weiyiyi.mybatis.mapping.Environment;
 import ltd.weiyiyi.mybatis.mapping.MappedStatement;
+import ltd.weiyiyi.mybatis.transaction.jdbc.JdbcTransactionFactory;
+import ltd.weiyiyi.mybatis.type.TypeAliasRegistry;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,6 +19,11 @@ import java.util.Map;
 public class Configuration {
 
     /**
+     * env
+     */
+    protected Environment environment;
+
+    /**
      * registry mapper and generate proxy factory by dao type.
      */
     protected MapperRegistry mapperRegistry = new MapperRegistry(this);
@@ -26,6 +35,15 @@ public class Configuration {
      */
     protected final Map<String, MappedStatement> mappedStatements = new HashMap<>();
 
+    /**
+     * register alias for type
+     */
+    protected final TypeAliasRegistry typeAliasRegistry = new TypeAliasRegistry();
+
+    public Configuration() {
+        typeAliasRegistry.registerAlias("JDBC", JdbcTransactionFactory.class);
+        typeAliasRegistry.registerAlias("DRUID", DruidDataSourceFactory.class);
+    }
     public void addMapper(Class<?> type) {
         mapperRegistry.addMapper(type);
     }
@@ -48,5 +66,17 @@ public class Configuration {
 
     public <T> T getMapper(Class<T> type, SqlSession sqlSession) {
         return mapperRegistry.getMapper(type, sqlSession);
+    }
+
+    public void setEnvironment(Environment environment) {
+        this.environment = environment;
+    }
+
+    public Environment getEnvironment() {
+        return environment;
+    }
+
+    public TypeAliasRegistry getTypeAliasRegistry() {
+        return typeAliasRegistry;
     }
 }

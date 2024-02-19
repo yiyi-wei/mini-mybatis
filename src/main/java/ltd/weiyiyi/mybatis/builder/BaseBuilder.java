@@ -2,6 +2,7 @@ package ltd.weiyiyi.mybatis.builder;
 
 
 import ltd.weiyiyi.mybatis.session.Configuration;
+import ltd.weiyiyi.mybatis.type.TypeAliasRegistry;
 
 /**
  * @author Wei Han
@@ -12,9 +13,11 @@ import ltd.weiyiyi.mybatis.session.Configuration;
 public abstract class BaseBuilder {
 
     protected final Configuration configuration;
+    protected final TypeAliasRegistry typeAliasRegistry;
 
     protected BaseBuilder(Configuration configuration) {
         this.configuration = configuration;
+        this.typeAliasRegistry = this.configuration.getTypeAliasRegistry();
     }
 
     public Configuration getConfiguration() {
