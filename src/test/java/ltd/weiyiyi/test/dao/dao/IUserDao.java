@@ -1,5 +1,7 @@
 package ltd.weiyiyi.test.dao.dao;
 
+import ltd.weiyiyi.test.dao.po.User;
+
 /**
  * @author Wei Han
  * @description mock user myBatis mapper
@@ -8,6 +10,6 @@ package ltd.weiyiyi.test.dao.dao;
  */
 public interface IUserDao {
 
-    String queryUserByUId(Long uid);
+    User queryUserByUId(Long uid);
     String queryUserByName(String name);
 }
