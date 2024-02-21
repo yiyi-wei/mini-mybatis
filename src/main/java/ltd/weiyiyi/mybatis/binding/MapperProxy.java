@@ -36,7 +36,7 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
             return method.invoke(this, args);
         } else {
             MapperMethod mapperMethod = cachedMapperMethod(method);
-            return "method proxy " + mapperMethod.execute(sqlSession, args);
+            return mapperMethod.execute(sqlSession, args);
         }
     }
 

@@ -1,7 +1,11 @@
 package ltd.weiyiyi.test.dao.po;
 
+import lombok.ToString;
+
 import java.util.Date;
 
+
+@ToString
 public class User {
 
     private Long id;

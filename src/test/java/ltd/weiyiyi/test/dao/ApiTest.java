@@ -1,6 +1,5 @@
 package ltd.weiyiyi.test.dao;
 
-import com.alibaba.fastjson.JSON;
 import ltd.weiyiyi.mybatis.dataSource.pooled.PooledDataSource;
 import ltd.weiyiyi.mybatis.io.Resources;
 import ltd.weiyiyi.mybatis.session.SqlSession;
@@ -35,10 +34,11 @@ public class ApiTest {
         IUserDao userDao = sqlSession.getMapper(IUserDao.class);
 
         // 3. 测试验证
-        for (int i = 0; i < 50; i++) {
-            User user = userDao.queryUserByUId(1L);
-            System.out.println(JSON.toJSONString(user));
-        }
+        User user = userDao.queryUserByUId(1L);
+        //for (int i = 0; i < 50; i++) {
+        //    System.out.println(JSON.toJSONString(user));
+        //}
+        System.out.println(user);
     }
 
     @Test

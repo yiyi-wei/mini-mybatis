@@ -4,8 +4,16 @@ import ltd.weiyiyi.mybatis.binding.MapperRegistry;
 import ltd.weiyiyi.mybatis.dataSource.druid.DruidDataSourceFactory;
 import ltd.weiyiyi.mybatis.dataSource.pooled.PooledDataSourceFactory;
 import ltd.weiyiyi.mybatis.dataSource.unpooled.UnpooledDataSourceFactory;
+import ltd.weiyiyi.mybatis.executor.Executor;
+import ltd.weiyiyi.mybatis.executor.SimpleExecutor;
+import ltd.weiyiyi.mybatis.executor.resultset.DefaultResultSetHandler;
+import ltd.weiyiyi.mybatis.executor.resultset.ResultSetHandler;
+import ltd.weiyiyi.mybatis.executor.statement.PrepareStatementHandler;
+import ltd.weiyiyi.mybatis.executor.statement.StatementHandler;
+import ltd.weiyiyi.mybatis.mapping.BoundSql;
 import ltd.weiyiyi.mybatis.mapping.Environment;
 import ltd.weiyiyi.mybatis.mapping.MappedStatement;
+import ltd.weiyiyi.mybatis.transaction.Transaction;
 import ltd.weiyiyi.mybatis.transaction.jdbc.JdbcTransactionFactory;
 import ltd.weiyiyi.mybatis.type.TypeAliasRegistry;
 
@@ -83,5 +91,18 @@ public class Configuration {
 
     public TypeAliasRegistry getTypeAliasRegistry() {
         return typeAliasRegistry;
+    }
+
+    public Executor newExecutor(Transaction transaction) {
+        return new SimpleExecutor(this, transaction);
+    }
+
+    public StatementHandler newStatementHandler(Executor executor, MappedStatement ms,
+                                                ResultHandler resultHandler, Object param, BoundSql boundSql) {
+        return new PrepareStatementHandler(executor, ms, param, resultHandler, boundSql);
+    }
+
+    public ResultSetHandler newResultSetHandler(Executor executor, MappedStatement mappedStatement, BoundSql boundSql) {
+        return new DefaultResultSetHandler(executor, mappedStatement, boundSql);
     }
 }

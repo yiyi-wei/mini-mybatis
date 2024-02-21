@@ -1,16 +1,12 @@
 package ltd.weiyiyi.mybatis.session.defaults;
 
-import ltd.weiyiyi.mybatis.mapping.BoundSql;
+import ltd.weiyiyi.mybatis.executor.Executor;
 import ltd.weiyiyi.mybatis.mapping.Environment;
 import ltd.weiyiyi.mybatis.mapping.MappedStatement;
 import ltd.weiyiyi.mybatis.session.Configuration;
 import ltd.weiyiyi.mybatis.session.SqlSession;
 
 import javax.sql.DataSource;
-import java.lang.reflect.Method;
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -22,9 +18,11 @@ import java.util.List;
 public class DefaultSqlSession implements SqlSession {
 
     private Configuration configuration;
+    private Executor executor;
 
-    public DefaultSqlSession(Configuration configuration) {
+    public DefaultSqlSession(Configuration configuration, Executor executor) {
         this.configuration = configuration;
+        this.executor = executor;
     }
 
     @Override
@@ -38,54 +36,12 @@ public class DefaultSqlSession implements SqlSession {
         MappedStatement mappedStatement = configuration.getMappedStatement(statement);
         Environment environment = configuration.getEnvironment();
         DataSource dataSource = environment.getDataSource();
-        try {
-            Connection connection = dataSource.getConnection();
+        List<Object> objectList = executor.query(mappedStatement, Executor.NO_RESULT_HANDLER, parameter, mappedStatement.getBoundSql());
 
-            BoundSql boundSql = mappedStatement.getBoundSql();
-
-            // sql with '?' param
-            PreparedStatement preparedStatement = connection.prepareStatement(boundSql.getSql());
-
-            // ? -> value
-            preparedStatement.setLong(1, Long.parseLong(((Object[]) parameter)[0].toString()));
-            ResultSet resultSet = preparedStatement.executeQuery();
-            List<T> objList = resultSet2Obj(resultSet, Class.forName(boundSql.getResultType()));
-            return objList.get(0);
-        } catch(Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+        return (T) objectList.get(0);
     }
 
 
-    private <T> List<T> resultSet2Obj(ResultSet resultSet, Class<?> clazz) {
-        List<T> list = new ArrayList<>();
-        try {
-            ResultSetMetaData metaData = resultSet.getMetaData();
-            int columnCount = metaData.getColumnCount();
-            // 每次遍历行值
-            while(resultSet.next()) {
-                T obj = (T) clazz.newInstance();
-                for(int i = 1; i <= columnCount; i++) {
-                    Object value = resultSet.getObject(i);
-                    String columnName = metaData.getColumnName(i);
-                    String setMethod = "set" + columnName.substring(0, 1)
-                            .toUpperCase() + columnName.substring(1);
-                    Method method;
-                    if(value instanceof Timestamp) {
-                        method = clazz.getMethod(setMethod, Date.class);
-                    } else {
-                        method = clazz.getMethod(setMethod, value.getClass());
-                    }
-                    method.invoke(obj, value);
-                }
-                list.add(obj);
-            }
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-        return list;
-    }
 
     @Override
     public <T> T getMapper(Class<T> type) {
