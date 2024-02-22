@@ -1,7 +1,7 @@
 package ltd.weiyiyi.mybatis.builder.xml;
 
 import ltd.weiyiyi.mybatis.builder.BaseBuilder;
-import ltd.weiyiyi.mybatis.dataSource.druid.DruidDataSourceFactory;
+import ltd.weiyiyi.mybatis.dataSource.DataSourceFactory;
 import ltd.weiyiyi.mybatis.io.Resources;
 import ltd.weiyiyi.mybatis.mapping.BoundSql;
 import ltd.weiyiyi.mybatis.mapping.Environment;
@@ -85,7 +85,8 @@ public class XmlConfigBuilder extends BaseBuilder {
             String dataSourceType = dataSourceElement.attributeValue("type");
             List<Element> propertyList = dataSourceElement.elements("property");
 
-            DruidDataSourceFactory dsFactory = (DruidDataSourceFactory) typeAliasRegistry.resolveAlias(dataSourceType)
+            DataSourceFactory dsFactory =
+                    (DataSourceFactory) typeAliasRegistry.resolveAlias(dataSourceType)
                     .newInstance();
 
             Properties props = new Properties();
